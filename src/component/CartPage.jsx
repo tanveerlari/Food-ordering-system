@@ -26,7 +26,7 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose }) {
     <div className={`cart-overlay ${closing ? "slide-down" : "slide-up"}`}>
       <div className="cart-topbar">
         <span>
-          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} £
+          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} ₹
         </span>
         <button className="close-btn" onClick={handleClose}>✕</button>
       </div>

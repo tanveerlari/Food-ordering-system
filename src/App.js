@@ -6,17 +6,21 @@ import OrderBar from "./component/OrderBar";
 import ItemDetail from "./component/ItemDetail";
 import CartPage from "./component/CartPage";
 import LoginModal from "./component/LoginModal";
-import { ITEMS } from "./data";
+import OfferSlider from "./component/OfferSlider";
+import LocationGate from "./component/LocationGate";
+import { ITEMS, OFFERS, RESTAURANT_LOCATION } from "./data";
 import "./App.css";
 
 function App() {
   const [activeCategory, setActiveCategory] = useState("popular");
   const [liked, setLiked] = useState({});
-  const [cart, setCart] = useState([]); // [{ item, quantity }]
+  const [cart, setCart] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [user, setUser] = useState(null); // { email }
+  const [user, setUser] = useState(null);
+  const [locationGateOpen, setLocationGateOpen] = useState(false);
+  const [isInsideRestaurant, setIsInsideRestaurant] = useState(null); // null | true | false
 
   const filteredItems = ITEMS.filter((i) => i.category === activeCategory);
 
@@ -58,13 +62,30 @@ function App() {
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
+  // Order bar click hone pe: agar location already verified hai to seedha cart kholo
+  // warna pehle LocationGate dikhao
+  function handleOrderBarClick() {
+    if (isInsideRestaurant === true) {
+      setCartOpen(true);
+    } else {
+      setLocationGateOpen(true);
+    }
+  }
+
+  function handleLocationResult(isInside) {
+    setIsInsideRestaurant(isInside);
+    setLocationGateOpen(false);
+    if (isInside) {
+      setCartOpen(true);
+    } else {
+      alert("You must be inside the restaurant to place an order.");
+    }
+  }
+
   return (
     <div className="app">
-      <Header
-        onLoginClick={() => setLoginOpen(true)}
-        user={user}
-      />
-
+      <Header onLoginClick={() => setLoginOpen(true)} user={user} />
+      <OfferSlider offers={OFFERS} />
       <CategoryTabs active={activeCategory} onSelect={setActiveCategory} />
 
       <div className="grid" key={activeCategory}>
@@ -83,7 +104,7 @@ function App() {
       <OrderBar
         totalQuantity={totalQuantity}
         totalPrice={totalPrice}
-        onClick={() => setCartOpen(true)}
+        onClick={handleOrderBarClick}
       />
 
       {selectedItem && (
@@ -93,6 +114,14 @@ function App() {
           onToggleLike={toggleLike}
           onAdd={addToCart}
           onClose={() => setSelectedItem(null)}
+        />
+      )}
+
+      {locationGateOpen && (
+        <LocationGate
+          restaurantLocation={RESTAURANT_LOCATION}
+          onResult={handleLocationResult}
+          onClose={() => setLocationGateOpen(false)}
         />
       )}
 

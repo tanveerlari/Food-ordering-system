@@ -1,3 +1,29 @@
+export const RESTAURANT_LOCATION = {
+  latitude: 19.279234732304644,    
+  longitude: 72.87527385342173,  
+  allowedRadiusMeters: 500,
+};
+
+export const OFFERS = [
+  {
+    id: 1,
+    title: "50% OFF on your first Ramen order",
+    bg: "#e0263e",
+    image: "/image/offer1.jpg"
+  },
+  {
+    id: 2,
+    title: "Buy 1 Get 1 Free on Prawn Curry",
+    bg: "#f6c344",
+    image: "/image/offer2.jpg"
+  },
+  {
+    id: 3,
+    title: "Free delivery above 500 ₹",
+    bg: "#2ecc71",
+    image: "/image/offer3.jpg"
+  },
+];
 export const CATEGORIES = [
   { id: "popular", label: "Popular", emoji: "👌" },
   { id: "curry", label: "curry", emoji: "🍛" },

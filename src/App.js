@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "./component/Header";
 import CategoryTabs from "./component/CategoryTabs";
 import FoodCard from "./component/FoodCard";
@@ -8,13 +8,17 @@ import CartPage from "./component/CartPage";
 import LoginModal from "./component/LoginModal";
 import OfferSlider from "./component/OfferSlider";
 import LocationGate from "./component/LocationGate";
+import RecommendedSection from "./component/RecommendedSection";
+import ComboSuggestions from "./component/ComboSuggestions";
 import { ITEMS, OFFERS, RESTAURANT_LOCATION } from "./data";
+import { getRecommendedItems } from "./recommendationEngine";
 import "./App.css";
 
 function App() {
   const [activeCategory, setActiveCategory] = useState("popular");
   const [liked, setLiked] = useState({});
   const [cart, setCart] = useState([]);
+  const [orderedItemIds, setOrderedItemIds] = useState([]); // 👈 naya: past orders track
   const [selectedItem, setSelectedItem] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -23,6 +27,17 @@ function App() {
   const [isInsideRestaurant, setIsInsideRestaurant] = useState(null); // null | true | false
 
   const filteredItems = ITEMS.filter((i) => i.category === activeCategory);
+
+  // 👇 naya: liked items ki id list nikalna
+  const likedIds = Object.keys(liked)
+    .filter((id) => liked[id])
+    .map(Number);
+
+  // 👇 naya: recommendations calculate karna (sirf jab liked/ordered change ho)
+  const recommendedItems = useMemo(
+    () => getRecommendedItems(likedIds, orderedItemIds, 4),
+    [liked, orderedItemIds]
+  );
 
   function toggleLike(id) {
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -59,11 +74,15 @@ function App() {
     );
   }
 
+  // 👇 naya: order place hone ke baad ordered items track karna
+  function markOrderPlaced() {
+    const newOrderedIds = cart.map((c) => c.item.id);
+    setOrderedItemIds((prev) => [...prev, ...newOrderedIds]);
+  }
+
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
-  // Order bar click hone pe: agar location already verified hai to seedha cart kholo
-  // warna pehle LocationGate dikhao
   function handleOrderBarClick() {
     if (isInsideRestaurant === true) {
       setCartOpen(true);
@@ -87,6 +106,9 @@ function App() {
       <Header onLoginClick={() => setLoginOpen(true)} user={user} />
       <OfferSlider offers={OFFERS} />
       <CategoryTabs active={activeCategory} onSelect={setActiveCategory} />
+
+      {/* 👇 naya: Recommended section, CategoryTabs ke baad aur grid se pehle */}
+      <RecommendedSection items={recommendedItems} onOpen={setSelectedItem} />
 
       <div className="grid" key={activeCategory}>
         {filteredItems.map((item, index) => (
@@ -127,12 +149,14 @@ function App() {
 
       {cartOpen && (
         <CartPage
-          cart={cart}
-          totalPrice={totalPrice}
-          onIncrease={increaseQty}
-          onDecrease={decreaseQty}
-          onClose={() => setCartOpen(false)}
-        />
+           cart={cart}
+           totalPrice={totalPrice}
+            onIncrease={increaseQty}
+            onDecrease={decreaseQty}
+            onClose={() => setCartOpen(false)}
+            onOrderPlaced={markOrderPlaced}
+            onAddNewItem={addToCart}   // 👈 ye line add karo
+         />
       )}
 
       {loginOpen && (

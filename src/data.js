@@ -1,7 +1,19 @@
+
+
 export const RESTAURANT_LOCATION = {
   latitude: 19.279234732304644,    
   longitude: 72.87527385342173,  
   allowedRadiusMeters: 500,
+};
+
+
+export const COMBO_PAIRS = {
+  1: [7, 9],   
+  2: [11, 5],
+  3: [10, 8],
+  4: [10, 8],
+  7: [1, 9],
+  9: [1, 7],
 };
 
 export const OFFERS = [

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import ComboSuggestions from "./ComboSuggestions";
+import { getComboSuggestions } from "../recommendationEngine";
 
-function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose }) {
+function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPlaced, onAddNewItem }) {
   const [orderType, setOrderType] = useState("dinein");
   const [note, setNote] = useState("");
   const [table, setTable] = useState("");
@@ -19,14 +21,23 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose }) {
     }
     setError("");
     alert("Order placed!");
+    if (onOrderPlaced) onOrderPlaced();
     handleClose();
+  }
+
+  const cartItemIds = cart.map((c) => c.item.id);
+  const comboItems = getComboSuggestions(cartItemIds);
+
+  // ✅ sirf ek hi handleComboAdd, seedha addToCart use karega
+  function handleComboAdd(item) {
+    onAddNewItem(item);
   }
 
   return (
     <div className={`cart-overlay ${closing ? "slide-down" : "slide-up"}`}>
       <div className="cart-topbar">
         <span>
-          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} ₹
+          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} £
         </span>
         <button className="close-btn" onClick={handleClose}>✕</button>
       </div>
@@ -58,16 +69,27 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose }) {
               <button onClick={() => onDecrease(c.item.id)}>−</button>
             </div>
             <span className="cart-item-price">
-              {(c.item.price * c.quantity).toFixed(2)} ₹
+              {(c.item.price * c.quantity).toFixed(2)} £
             </span>
           </div>
         ))}
       </div>
 
+      <ComboSuggestions items={comboItems} onAdd={handleComboAdd} />
+
       <div className="cart-total-row">
         <span>Total:</span>
-        <span className="total-amount">{totalPrice.toFixed(2)} ₹</span>
+        <span className="total-amount">{totalPrice.toFixed(2)} £</span>
       </div>
+
+      <textarea
+        className="note-input"
+        placeholder="Add note 🙏..."
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
+
+      <div className="when-ready">🕐 When ready</div>
 
       {orderType === "dinein" && (
         <input

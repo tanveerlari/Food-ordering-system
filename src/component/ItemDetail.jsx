@@ -1,10 +1,24 @@
+import { useState } from "react";
+
 function ItemDetail({ item, liked, onToggleLike, onAdd, onClose }) {
+  const [closing, setClosing] = useState(false);
+
   if (!item) return null;
 
+  function handleClose() {
+    setClosing(true);
+    setTimeout(onClose, 250); // animation khatam hone tak wait karo
+  }
+
+  function handleAdd() {
+    setClosing(true);
+    setTimeout(() => onAdd(item), 250);
+  }
+
   return (
-    <div className="detail-overlay">
+    <div className={`detail-overlay ${closing ? "detail-closing" : "detail-opening"}`}>
       <div className="detail-topbar">
-        <button className="icon-btn" onClick={onClose}>‹</button>
+        <button className="icon-btn" onClick={handleClose}>‹</button>
         <button
           className="icon-btn"
           onClick={() => onToggleLike(item.id)}
@@ -22,7 +36,7 @@ function ItemDetail({ item, liked, onToggleLike, onAdd, onClose }) {
         <span className="detail-price">{item.price.toFixed(2)} ₹</span>
       </div>
 
-      <button className="add-btn" onClick={() => onAdd(item)}>+</button>
+      <button className="add-btn" onClick={handleAdd}>+</button>
 
       <p className="detail-description">{item.description}</p>
     </div>

@@ -3,6 +3,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   background: #ffffff;
   color: #1a1a1a;
+  scroll-behavior: smooth;
 }
 .app {
   max-width: 480px;
@@ -187,6 +188,122 @@ body {
 .header h1 {
   font-size: 26px;
   font-weight: 800;
+}
+.recommended-section {
+  padding: 16px;
+}
+
+.recommended-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.recommended-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ai-icon {
+  font-size: 18px;
+}
+
+.recommended-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.recommended-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.recommended-card {
+  flex: 0 0 130px;
+  cursor: pointer;
+}
+
+.recommended-img {
+  width: 130px;
+  height: 130px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.recommended-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommended-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #14110f;
+}
+
+/* Combo suggestions (cart page) */
+.combo-section {
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.combo-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #666;
+}
+
+.combo-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.combo-item-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.combo-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.combo-item-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.combo-item-price {
+  font-size: 13px;
+  color: #666;
+}
+
+.combo-add-btn {
+  background: #14110f;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
 .offer-slider-wrap {
   padding: 12px 16px 4px;
@@ -452,6 +569,33 @@ body {
   height: 100%;
   object-fit: cover;
 }
+.detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: imageZoomIn 0.5s ease-out;
+}
+
+@keyframes imageZoomIn {
+  from { transform: scale(1.1); }
+  to { transform: scale(1); }
+}
+
+.add-btn {
+  transition: transform 0.15s ease;
+}
+
+.add-btn:active {
+  transform: scale(0.8);
+}
+
+.icon-btn {
+  transition: transform 0.15s ease;
+}
+
+.icon-btn:active {
+  transform: scale(0.85);
+}
 
 .detail-info-row {
   display: flex;
@@ -490,7 +634,37 @@ body {
   font-size: 15px;
   line-height: 1.6;
   color: #444;
-}.order-bar {
+}
+@keyframes detailSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes detailSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+  }
+}
+
+.detail-opening {
+  animation: detailSlideUp 0.3s ease-out forwards;
+}
+
+.detail-closing {
+  animation: detailSlideDown 0.25s ease-in forwards;
+}
+.order-bar {
   position: fixed;
   bottom: 0;
   left: 0;

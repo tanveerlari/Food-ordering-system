@@ -1,8 +1,8 @@
 
 
 export const RESTAURANT_LOCATION = {
-  latitude: 19.279234732304644,    
-  longitude: 72.87527385342173,  
+  latitude:19.414718907089252,    
+  longitude: 72.80081719595653,  
   allowedRadiusMeters: 500,
 };
 

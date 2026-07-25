@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ComboSuggestions from "./ComboSuggestions";
+import OrderSuccess from "./OrderSuccess";
 import { getComboSuggestions } from "../recommendationEngine";
 
 function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPlaced, onAddNewItem }) {
@@ -8,6 +9,7 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
   const [table, setTable] = useState("");
   const [error, setError] = useState("");
   const [closing, setClosing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   function handleClose() {
     setClosing(true);
@@ -20,24 +22,29 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
       return;
     }
     setError("");
-    alert("Order placed!");
+     setShowSuccess(true);
+  }
+    function handleSuccessDone() {
     if (onOrderPlaced) onOrderPlaced();
-    handleClose();
+    onClose(); // seedha close, animation already khatam ho chuki
   }
 
   const cartItemIds = cart.map((c) => c.item.id);
   const comboItems = getComboSuggestions(cartItemIds);
 
-  // ✅ sirf ek hi handleComboAdd, seedha addToCart use karega
+  //  sirf ek hi handleComboAdd, seedha addToCart use karega
   function handleComboAdd(item) {
     onAddNewItem(item);
+  }
+    if (showSuccess) {
+    return <OrderSuccess onDone={handleSuccessDone} />;
   }
 
   return (
     <div className={`cart-overlay ${closing ? "slide-down" : "slide-up"}`}>
       <div className="cart-topbar">
         <span>
-          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} £
+          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} ₹
         </span>
         <button className="close-btn" onClick={handleClose}>✕</button>
       </div>
@@ -69,7 +76,7 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
               <button onClick={() => onDecrease(c.item.id)}>−</button>
             </div>
             <span className="cart-item-price">
-              {(c.item.price * c.quantity).toFixed(2)} £
+              {(c.item.price * c.quantity).toFixed(2)} ₹
             </span>
           </div>
         ))}
@@ -79,7 +86,7 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
 
       <div className="cart-total-row">
         <span>Total:</span>
-        <span className="total-amount">{totalPrice.toFixed(2)} £</span>
+        <span className="total-amount">{totalPrice.toFixed(2)} ₹</span>
       </div>
 
       <textarea

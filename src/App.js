@@ -9,7 +9,8 @@ import LoginModal from "./component/LoginModal";
 import OfferSlider from "./component/OfferSlider";
 import LocationGate from "./component/LocationGate";
 import RecommendedSection from "./component/RecommendedSection";
-import ComboSuggestions from "./component/ComboSuggestions";
+import OrderTracking from "./component/OrderTracking";
+import FeedbackModal from "./component/FeedbackModal";
 import { ITEMS, OFFERS, RESTAURANT_LOCATION } from "./data";
 import { getRecommendedItems } from "./recommendationEngine";
 import "./App.css";
@@ -18,22 +19,21 @@ function App() {
   const [activeCategory, setActiveCategory] = useState("popular");
   const [liked, setLiked] = useState({});
   const [cart, setCart] = useState([]);
-  const [orderedItemIds, setOrderedItemIds] = useState([]); // 👈 naya: past orders track
+  const [orderedItemIds, setOrderedItemIds] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [locationGateOpen, setLocationGateOpen] = useState(false);
-  const [isInsideRestaurant, setIsInsideRestaurant] = useState(null); // null | true | false
+  const [isInsideRestaurant, setIsInsideRestaurant] = useState(null);
+
+  const [activeOrder, setActiveOrder] = useState(null);       // 👈 naya
+  const [feedbackOpen, setFeedbackOpen] = useState(false);     // 👈 naya
+  const [lastOrderItems, setLastOrderItems] = useState([]);    // 👈 naya
 
   const filteredItems = ITEMS.filter((i) => i.category === activeCategory);
 
-  // 👇 naya: liked items ki id list nikalna
-  const likedIds = Object.keys(liked)
-    .filter((id) => liked[id])
-    .map(Number);
-
-  // 👇 naya: recommendations calculate karna (sirf jab liked/ordered change ho)
+  const likedIds = Object.keys(liked).filter((id) => liked[id]).map(Number);
   const recommendedItems = useMemo(
     () => getRecommendedItems(likedIds, orderedItemIds, 4),
     [liked, orderedItemIds]
@@ -58,26 +58,28 @@ function App() {
 
   function increaseQty(itemId) {
     setCart((prev) =>
-      prev.map((c) =>
-        c.item.id === itemId ? { ...c, quantity: c.quantity + 1 } : c
-      )
+      prev.map((c) => (c.item.id === itemId ? { ...c, quantity: c.quantity + 1 } : c))
     );
   }
 
   function decreaseQty(itemId) {
     setCart((prev) =>
-      prev
-        .map((c) =>
-          c.item.id === itemId ? { ...c, quantity: c.quantity - 1 } : c
-        )
+      prev.map((c) => (c.item.id === itemId ? { ...c, quantity: c.quantity - 1 } : c))
         .filter((c) => c.quantity > 0)
     );
   }
 
-  // 👇 naya: order place hone ke baad ordered items track karna
   function markOrderPlaced() {
     const newOrderedIds = cart.map((c) => c.item.id);
     setOrderedItemIds((prev) => [...prev, ...newOrderedIds]);
+    setLastOrderItems(cart.map((c) => c.item));
+
+    const orderId = Date.now();
+    setActiveOrder({
+      id: orderId,
+      items: cart.map((c) => ({ name: c.item.name, quantity: c.quantity })),
+      status: "preparing",
+    });
   }
 
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
@@ -106,8 +108,6 @@ function App() {
       <Header onLoginClick={() => setLoginOpen(true)} user={user} />
       <OfferSlider offers={OFFERS} />
       <CategoryTabs active={activeCategory} onSelect={setActiveCategory} />
-
-      {/* 👇 naya: Recommended section, CategoryTabs ke baad aur grid se pehle */}
       <RecommendedSection items={recommendedItems} onOpen={setSelectedItem} />
 
       <div className="grid" key={activeCategory}>
@@ -149,14 +149,33 @@ function App() {
 
       {cartOpen && (
         <CartPage
-           cart={cart}
-           totalPrice={totalPrice}
-            onIncrease={increaseQty}
-            onDecrease={decreaseQty}
-            onClose={() => setCartOpen(false)}
-            onOrderPlaced={markOrderPlaced}
-            onAddNewItem={addToCart}   // 👈 ye line add karo
-         />
+          cart={cart}
+          totalPrice={totalPrice}
+          onIncrease={increaseQty}
+          onDecrease={decreaseQty}
+          onClose={() => setCartOpen(false)}
+          onOrderPlaced={markOrderPlaced}
+          onAddNewItem={addToCart}
+        />
+      )}
+
+      {/* 👇 YAHI PE Order Tracking dikhega — CartPage band hone ke baad */}
+      {activeOrder && (
+        <OrderTracking
+          order={activeOrder}
+          onStatusUpdate={(updatedOrder) => setActiveOrder(updatedOrder)}
+          onClose={() => {
+            setActiveOrder(null);
+            setTimeout(() => setFeedbackOpen(true), 300);
+          }}
+        />
+      )}
+
+      {feedbackOpen && (
+        <FeedbackModal
+          orderItems={lastOrderItems}
+          onClose={() => setFeedbackOpen(false)}
+        />
       )}
 
       {loginOpen && (

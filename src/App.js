@@ -85,13 +85,17 @@ function App() {
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
-  function handleOrderBarClick() {
-    if (isInsideRestaurant === true) {
-      setCartOpen(true);
-    } else {
-      setLocationGateOpen(true);
-    }
+function handleOrderBarClick() {
+  if (!user) {
+    setLoginOpen(true);   // 👈 naya: pehle login mangna
+    return;
   }
+  if (isInsideRestaurant === true) {
+    setCartOpen(true);
+  } else {
+    setLocationGateOpen(true);
+  }
+}
 
   function handleLocationResult(isInside) {
     setIsInsideRestaurant(isInside);
@@ -178,15 +182,21 @@ function App() {
         />
       )}
 
-      {loginOpen && (
-        <LoginModal
-          onClose={() => setLoginOpen(false)}
-          onLoginSuccess={(email) => {
-            setUser({ email });
-            setLoginOpen(false);
-          }}
-        />
-      )}
+{loginOpen && (
+  <LoginModal
+    onClose={() => setLoginOpen(false)}
+    onLoginSuccess={(userData) => {
+      setUser(userData); // 👈 ab pura object store hoga: { email, name, photoURL }
+      setLoginOpen(false);
+
+      if (isInsideRestaurant === true) {
+        setCartOpen(true);
+      } else {
+        setLocationGateOpen(true);
+      }
+    }}
+  />
+)}
     </div>
   );
 }

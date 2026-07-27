@@ -1,47 +1,58 @@
 import { useState } from "react";
+import { signInWithPopup, signOut } from "firebase/auth";
+import { auth, googleProvider } from "../firebase";
 
 function LoginModal({ onClose, onLoginSuccess }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin() {
-    if (!email || !password) {
-      alert("Please enter email and password");
-      return;
+  async function handleGoogleSignIn() {
+    setError("");
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      onLoginSuccess({
+        email: user.email,
+        name: user.displayName,
+        photoURL: user.photoURL,
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    onLoginSuccess(email);
   }
 
   return (
     <div className="login-overlay">
       <div className="login-box">
         <div className="login-topbar">
-          <h2>Login</h2>
+          <h2>Sign In</h2>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
 
-        <input
-          className="login-input"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          className="login-input"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <p className="login-subtitle">Sign in to place your order</p>
 
-        <button className="login-submit-btn" onClick={handleLogin}>
-          Login
+        {error && <p className="login-error-text">{error}</p>}
+
+        <button
+          className="google-signin-btn"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            className="google-icon"
+          />
+          {loading ? "Signing in..." : "Continue with Google"}
         </button>
 
-        <p className="signup-text">
-          Don't have an account? <span className="signup-link">Sign up</span>
-        </p>
+        <button className="login-cancel-btn" onClick={onClose}>
+          Cancel
+        </button>
       </div>
     </div>
   );

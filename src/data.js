@@ -1,10 +1,14 @@
 
 
 export const RESTAURANT_LOCATION = {
-  latitude:19.27924486082039,    
-  longitude: 72.87530603972628,  
+  latitude:19.279163844031185,     
+  longitude: 72.87529531101625, 
   allowedRadiusMeters: 500,
 };
+
+export const ADMIN_EMAILS = [
+  "shamsherlari@gmail.com",  
+];
 
 
 export const COMBO_PAIRS = {

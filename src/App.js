@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Header from "./component/Header";
 import CategoryTabs from "./component/CategoryTabs";
 import FoodCard from "./component/FoodCard";
@@ -11,11 +11,18 @@ import LocationGate from "./component/LocationGate";
 import RecommendedSection from "./component/RecommendedSection";
 import OrderTracking from "./component/OrderTracking";
 import FeedbackModal from "./component/FeedbackModal";
-import { ITEMS, OFFERS, RESTAURANT_LOCATION } from "./data";
+import AdminMenuPanel from "./component/AdminMenuPanel";
+import StaffOrderPanel from "./component/StaffOrderPanel";
+import { OFFERS, RESTAURANT_LOCATION, ADMIN_EMAILS } from "./data";
 import { getRecommendedItems } from "./recommendationEngine";
+import { listenToMenuItems } from "./menuService";
+import { createOrderInFirestore, clearOrderInFirestore } from "./orderService";
 import "./App.css";
 
 function App() {
+  const path = window.location.pathname; // 👈 naya
+
+  const [items, setItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("popular");
   const [liked, setLiked] = useState({});
   const [cart, setCart] = useState([]);
@@ -26,17 +33,22 @@ function App() {
   const [user, setUser] = useState(null);
   const [locationGateOpen, setLocationGateOpen] = useState(false);
   const [isInsideRestaurant, setIsInsideRestaurant] = useState(null);
+  const [activeOrder, setActiveOrder] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [lastOrderItems, setLastOrderItems] = useState([]);
 
-  const [activeOrder, setActiveOrder] = useState(null);       // 👈 naya
-  const [feedbackOpen, setFeedbackOpen] = useState(false);     // 👈 naya
-  const [lastOrderItems, setLastOrderItems] = useState([]);    // 👈 naya
+  const isAdmin = user && ADMIN_EMAILS.includes(user.email);
 
-  const filteredItems = ITEMS.filter((i) => i.category === activeCategory);
+  useEffect(() => {
+    const unsubscribe = listenToMenuItems(setItems);
+    return () => unsubscribe();
+  }, []);
 
+  const filteredItems = items.filter((i) => i.category === activeCategory);
   const likedIds = Object.keys(liked).filter((id) => liked[id]).map(Number);
   const recommendedItems = useMemo(
-    () => getRecommendedItems(likedIds, orderedItemIds, 4),
-    [liked, orderedItemIds]
+    () => getRecommendedItems(items, likedIds, orderedItemIds, 4),
+    [items, liked, orderedItemIds]
   );
 
   function toggleLike(id) {
@@ -69,33 +81,36 @@ function App() {
     );
   }
 
-  function markOrderPlaced() {
+  async function markOrderPlaced() {
     const newOrderedIds = cart.map((c) => c.item.id);
     setOrderedItemIds((prev) => [...prev, ...newOrderedIds]);
     setLastOrderItems(cart.map((c) => c.item));
 
-    const orderId = Date.now();
-    setActiveOrder({
-      id: orderId,
+    const orderId = `order_${Date.now()}`;
+    const newOrder = {
       items: cart.map((c) => ({ name: c.item.name, quantity: c.quantity })),
       status: "preparing",
-    });
+      createdAt: new Date().toISOString(),
+    };
+
+    await createOrderInFirestore(orderId, newOrder);
+    setActiveOrder({ id: orderId, ...newOrder });
   }
 
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
-function handleOrderBarClick() {
-  if (!user) {
-    setLoginOpen(true);   // 👈 naya: pehle login mangna
-    return;
+  function handleOrderBarClick() {
+    if (!user) {
+      setLoginOpen(true);
+      return;
+    }
+    if (isInsideRestaurant === true) {
+      setCartOpen(true);
+    } else {
+      setLocationGateOpen(true);
+    }
   }
-  if (isInsideRestaurant === true) {
-    setCartOpen(true);
-  } else {
-    setLocationGateOpen(true);
-  }
-}
 
   function handleLocationResult(isInside) {
     setIsInsideRestaurant(isInside);
@@ -107,9 +122,53 @@ function handleOrderBarClick() {
     }
   }
 
+  // 👇 /admin route
+  if (path === "/admin") {
+    return (
+      <div className="standalone-page">
+        {!user ? (
+          <LoginModal onClose={() => {}} onLoginSuccess={(userData) => setUser(userData)} />
+        ) : !isAdmin ? (
+          <div className="access-denied">
+            <h2>🚫 Access Denied</h2>
+            <p>You are not authorized to view this page.</p>
+          </div>
+        ) : (
+          <AdminMenuPanel onClose={() => (window.location.href = "/")} />
+        )}
+      </div>
+    );
+  }
+
+  // 👇 /staff route
+  if (path === "/staff") {
+    return (
+      <div className="standalone-page">
+        {!user ? (
+          <LoginModal onClose={() => {}} onLoginSuccess={(userData) => setUser(userData)} />
+        ) : !isAdmin ? (
+          <div className="access-denied">
+            <h2>🚫 Access Denied</h2>
+            <p>You are not authorized to view this page.</p>
+          </div>
+        ) : (
+          <StaffOrderPanel onClose={() => (window.location.href = "/")} />
+        )}
+      </div>
+    );
+  }
+
+  // 👇 normal app ("/")
   return (
     <div className="app">
-      <Header onLoginClick={() => setLoginOpen(true)} user={user} />
+      <Header
+        onLoginClick={() => setLoginOpen(true)}
+        user={user}
+        isAdmin={isAdmin}
+        onAdminClick={() => window.open("/admin", "_blank")}
+        onStaffClick={() => window.open("/staff", "_blank")}
+      />
+
       <OfferSlider offers={OFFERS} />
       <CategoryTabs active={activeCategory} onSelect={setActiveCategory} />
       <RecommendedSection items={recommendedItems} onOpen={setSelectedItem} />
@@ -163,12 +222,11 @@ function handleOrderBarClick() {
         />
       )}
 
-      {/* 👇 YAHI PE Order Tracking dikhega — CartPage band hone ke baad */}
       {activeOrder && (
         <OrderTracking
           order={activeOrder}
-          onStatusUpdate={(updatedOrder) => setActiveOrder(updatedOrder)}
-          onClose={() => {
+          onClose={async () => {
+            await clearOrderInFirestore(activeOrder.id);
             setActiveOrder(null);
             setTimeout(() => setFeedbackOpen(true), 300);
           }}
@@ -182,21 +240,20 @@ function handleOrderBarClick() {
         />
       )}
 
-{loginOpen && (
-  <LoginModal
-    onClose={() => setLoginOpen(false)}
-    onLoginSuccess={(userData) => {
-      setUser(userData); // 👈 ab pura object store hoga: { email, name, photoURL }
-      setLoginOpen(false);
-
-      if (isInsideRestaurant === true) {
-        setCartOpen(true);
-      } else {
-        setLocationGateOpen(true);
-      }
-    }}
-  />
-)}
+      {loginOpen && (
+        <LoginModal
+          onClose={() => setLoginOpen(false)}
+          onLoginSuccess={(userData) => {
+            setUser(userData);
+            setLoginOpen(false);
+            if (isInsideRestaurant === true) {
+              setCartOpen(true);
+            } else {
+              setLocationGateOpen(true);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

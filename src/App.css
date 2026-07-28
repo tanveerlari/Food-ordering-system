@@ -85,6 +85,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  margin-top: 27px;
 }
 
 .login-overlay {
@@ -1319,4 +1320,424 @@ body {
   font-weight: 600;
   color: #2ecc71;
   margin-top: 10px;
+}
+.staff-order-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+/* ============ ADMIN MENU PANEL ============ */
+
+.admin-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #f7f4ee;
+  z-index: 900;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.admin-menu-topbar {
+  background: #0f0c0a;
+  color: #f5f0e8;
+  padding: 20px 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid #d97706;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.admin-menu-topbar h2 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.admin-menu-topbar .close-btn {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #f5f0e8;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.admin-menu-content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* ---- Add/Edit form: looks like a structured data-entry card ---- */
+.admin-form {
+  background: #ffffff;
+  border: 1px solid #e8e2d5;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.admin-form h3 {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #8a5a1f;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0ead9;
+}
+
+.admin-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1.5px solid #e8e2d5;
+  border-radius: 9px;
+  font-size: 14px;
+  background: #fbf9f4;
+  color: #1a1512;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #d97706;
+  background: #ffffff;
+}
+
+.admin-input::placeholder {
+  color: #b3a894;
+}
+
+.admin-textarea {
+  height: 70px;
+  resize: none;
+  font-family: inherit;
+}
+
+.admin-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.admin-save-btn {
+  flex: 1;
+  padding: 13px;
+  background: #1a1512;
+  color: #f5f0e8;
+  border: none;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.admin-save-btn:active {
+  transform: scale(0.97);
+}
+
+.admin-cancel-btn {
+  padding: 13px 20px;
+  background: transparent;
+  border: 1.5px solid #e0d9cc;
+  color: #8a8072;
+  border-radius: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Items list: like a compact inventory table ---- */
+.admin-items-list h3 {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #8a8072;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.admin-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #ece6d9;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+
+.admin-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1512;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-item-meta {
+  font-size: 12px;
+  color: #a89b7f;
+  text-transform: capitalize;
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.admin-edit-btn,
+.admin-delete-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.admin-edit-btn:active,
+.admin-delete-btn:active {
+  transform: scale(0.92);
+}
+
+.admin-edit-btn {
+  background: #fdf1de;
+  color: #b3720c;
+}
+
+.admin-delete-btn {
+  background: #fbe9e9;
+  color: #c0392b;
+}
+.image-upload-box {
+  margin-bottom: 10px;
+}
+
+.image-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100px;
+  border: 2px dashed #d9d0bc;
+  border-radius: 10px;
+  background: #fbf9f4;
+  color: #a89b7f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.image-upload-label:hover {
+  border-color: #d97706;
+  background: #fdf6ec;
+}
+
+.upload-icon {
+  font-size: 24px;
+}
+
+.image-preview-wrap {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+/* ============ STAFF PANEL — Kitchen Display Style ============ */
+
+.staff-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1a1512;
+  z-index: 800;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.staff-panel-box {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #1a1512;
+  padding-bottom: 40px;
+}
+
+/* Top bar — dark, industrial */
+.staff-panel-box .tracking-topbar {
+  background: #0f0c0a;
+  color: #f5f0e8;
+  padding: 20px 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid #d97706;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.staff-panel-box .tracking-topbar h2 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #f5f0e8;
+}
+
+.staff-panel-box .close-btn-feedback {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: #f5f0e8;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Empty state */
+.staff-panel-box .empty-text {
+  color: #6b6560;
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 14px;
+}
+
+/* Each order = a kitchen ticket */
+.staff-order-card {
+  background: #f5f0e8;
+  border-radius: 4px;
+  margin: 16px 16px 0;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-left: 5px solid #d97706;
+  position: relative;
+}
+
+/* Perforated-ticket top edge, subtle detail */
+.staff-order-card::before {
+  content: "";
+  display: block;
+  height: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent, transparent 6px,
+    #1a1512 6px, #1a1512 10px
+  );
+  opacity: 0.15;
+}
+
+.staff-order-card .tracking-items {
+  background: transparent;
+  padding: 16px 18px 4px;
+  border-radius: 0;
+  gap: 6px;
+}
+
+.staff-order-card .tracking-item-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1512;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.2px;
+}
+
+.staff-current-status {
+  padding: 4px 18px 14px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8a5a1f;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.staff-current-status strong {
+  color: #1a1512;
+  text-transform: capitalize;
+}
+
+/* Status control buttons — big, tactile, thumb-friendly */
+.staff-buttons {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 16px;
+}
+
+.staff-status-btn {
+  flex: 1;
+  padding: 14px 6px;
+  border: 2px solid #e0d9cc;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a8072;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.2px;
+}
+
+.staff-status-btn:active {
+  transform: scale(0.95);
+}
+
+.staff-status-btn.active-status {
+  border-color: #1a1512;
+  background: #1a1512;
+  color: #f5f0e8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }

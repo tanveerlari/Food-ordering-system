@@ -1,3 +1,4 @@
+// src/App.js
 import { useState, useEffect, useMemo } from "react";
 import Header from "./component/Header";
 import CategoryTabs from "./component/CategoryTabs";
@@ -19,8 +20,15 @@ import { listenToMenuItems } from "./menuService";
 import { createOrderInFirestore, clearOrderInFirestore } from "./orderService";
 import "./App.css";
 
+
+// Firebase auth imports hata diye gaye hain
+// import { auth } from "./firebase";
+// import { onAuthStateChanged } from "firebase/auth";
+
+import "./App.css";
+
 function App() {
-  const path = window.location.pathname; // 👈 naya
+  const path = window.location.pathname;
 
   const [items, setItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("popular");
@@ -30,7 +38,7 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // Ab yeh state page refresh par reset ho jayega
   const [locationGateOpen, setLocationGateOpen] = useState(false);
   const [isInsideRestaurant, setIsInsideRestaurant] = useState(null);
   const [activeOrder, setActiveOrder] = useState(null);
@@ -39,10 +47,31 @@ function App() {
 
   const isAdmin = user && ADMIN_EMAILS.includes(user.email);
 
+  // Firebase auth state listener hata diya gaya hai
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+  //     if (currentUser) {
+  //       setUser({
+  //         email: currentUser.email,
+  //         name: currentUser.displayName,
+  //         photoURL: currentUser.photoURL,
+  //         uid: currentUser.uid,
+  //       });
+  //     } else {
+  //       setUser(null);
+  //     }
+  //   });
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
     const unsubscribe = listenToMenuItems(setItems);
     return () => unsubscribe();
   }, []);
+
+  const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
+  const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
+
 
   const filteredItems = items.filter((i) => i.category === activeCategory);
   const likedIds = Object.keys(liked).filter((id) => liked[id]).map(Number);
@@ -97,8 +126,6 @@ function App() {
     setActiveOrder({ id: orderId, ...newOrder });
   }
 
-  const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
-  const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
   function handleOrderBarClick() {
     if (!user) {
@@ -116,7 +143,11 @@ function App() {
     setIsInsideRestaurant(isInside);
     setLocationGateOpen(false);
     if (isInside) {
-      setCartOpen(true);
+      if (totalQuantity > 0) {
+        setCartOpen(true);
+      } else {
+        alert("Your cart is empty. Please add items to order.");
+      }
     } else {
       alert("You must be inside the restaurant to place an order.");
     }
@@ -214,6 +245,7 @@ function App() {
         <CartPage
           cart={cart}
           totalPrice={totalPrice}
+          totalQuantity={totalQuantity}
           onIncrease={increaseQty}
           onDecrease={decreaseQty}
           onClose={() => setCartOpen(false)}
@@ -246,10 +278,12 @@ function App() {
           onLoginSuccess={(userData) => {
             setUser(userData);
             setLoginOpen(false);
-            if (isInsideRestaurant === true) {
-              setCartOpen(true);
-            } else {
-              setLocationGateOpen(true);
+            if (totalQuantity > 0) {
+                if (isInsideRestaurant === true) {
+                    setCartOpen(true);
+                } else {
+                    setLocationGateOpen(true);
+                }
             }
           }}
         />
@@ -258,4 +292,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

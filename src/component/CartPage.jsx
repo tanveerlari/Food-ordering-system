@@ -3,11 +3,12 @@ import ComboSuggestions from "./ComboSuggestions";
 import OrderSuccess from "./OrderSuccess";
 import { getComboSuggestions } from "../recommendationEngine";
 
-function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPlaced, onAddNewItem }) {
+
+function CartPage({ cart, totalPrice, totalQuantity, onIncrease, onDecrease, onClose, onOrderPlaced, onAddNewItem }) {
   const [orderType, setOrderType] = useState("dinein");
   const [note, setNote] = useState("");
   const [table, setTable] = useState("");
-  const [error, setError] = useState("");
+  const [cartError, setCartError] = useState(""); // <-- Naya state
   const [closing, setClosing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -17,14 +18,25 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
   }
 
   function handleOrder() {
-    if (orderType === "dinein" && table.trim() === "") {
-      setError("Please fill required fields");
+    // Har baar order attempt se pehle error ko clear kar do
+    setCartError("");
+
+    // PROBLEM SOLVED: Cart empty hone par order place nahi hoga
+    if (totalQuantity === 0) {
+      setCartError("Your cart is empty. Please add items before placing an order."); // <-- Yahan message set kiya
       return;
     }
-    setError("");
-     setShowSuccess(true);
+
+    if (orderType === "dinein" && table.trim() === "") {
+      setCartError("Please enter your Table number for dine-in."); // <-- Yahan message set kiya
+      return;
+    }
+    
+    // Agar sab theek hai toh success dikhao
+    setShowSuccess(true);
   }
-    function handleSuccessDone() {
+
+  function handleSuccessDone() {
     if (onOrderPlaced) onOrderPlaced();
     onClose(); // seedha close, animation already khatam ho chuki
   }
@@ -32,7 +44,6 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
   const cartItemIds = cart.map((c) => c.item.id);
   const comboItems = getComboSuggestions(cartItemIds);
 
-  //  sirf ek hi handleComboAdd, seedha addToCart use karega
   function handleComboAdd(item) {
     onAddNewItem(item);
   }
@@ -40,17 +51,21 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
     return <OrderSuccess onDone={handleSuccessDone} />;
   }
 
+  // Order button ko disable karein agar cart empty hai
+  const isOrderButtonDisabled = totalQuantity === 0;
+
+
   return (
     <div className={`cart-overlay ${closing ? "slide-down" : "slide-up"}`}>
       <div className="cart-topbar">
         <span>
-          Order {cart.reduce((s, c) => s + c.quantity, 0)} for {totalPrice.toFixed(2)} ₹
+          Order {totalQuantity} for {totalPrice.toFixed(2)} ₹
         </span>
         <button className="close-btn" onClick={handleClose}>✕</button>
       </div>
 
       <div className="order-type-tabs">
-        {["dinein", "takeaway", "delivery"].map((type) => (
+        {["dinein"].map((type) => (
           <button
             key={type}
             className={`type-tab ${orderType === type ? "active" : ""}`}
@@ -62,27 +77,32 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
       </div>
 
       <div className="cart-items">
-        {cart.map((c, index) => (
-          <div
-            className="cart-item-row fade-in"
-            style={{ animationDelay: `${index * 60}ms` }}
-            key={c.item.id}
-          >
-            <span className="cart-item-name">
-              {c.quantity} x {c.item.name}
-            </span>
-            <div className="qty-controls">
-              <button onClick={() => onIncrease(c.item.id)}>+</button>
-              <button onClick={() => onDecrease(c.item.id)}>−</button>
+        {cart.length === 0 ? (
+          <p className="empty-cart-message">Your cart is empty. Add some delicious food!</p>
+        ) : (
+          cart.map((c, index) => (
+            <div
+              className="cart-item-row fade-in"
+              style={{ animationDelay: `${index * 60}ms` }}
+              key={c.item.id}
+            >
+              <span className="cart-item-name">
+                {c.quantity} x {c.item.name}
+              </span>
+              <div className="qty-controls">
+                <button onClick={() => onIncrease(c.item.id)}>+</button>
+                <button onClick={() => onDecrease(c.item.id)}>−</button>
+              </div>
+              <span className="cart-item-price">
+                {(c.item.price * c.quantity).toFixed(2)} ₹
+              </span>
             </div>
-            <span className="cart-item-price">
-              {(c.item.price * c.quantity).toFixed(2)} ₹
-            </span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      <ComboSuggestions items={comboItems} onAdd={handleComboAdd} />
+      {/* Combo suggestions tabhi dikhao jab cart mein items hon */}
+      {cart.length > 0 && <ComboSuggestions items={comboItems} onAdd={handleComboAdd} />}
 
       <div className="cart-total-row">
         <span>Total:</span>
@@ -91,12 +111,12 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
 
       <textarea
         className="note-input"
-        placeholder="Add note 🙏..."
+        placeholder="Add note ..."
         value={note}
         onChange={(e) => setNote(e.target.value)}
       />
 
-      <div className="when-ready">🕐 When ready</div>
+
 
       {orderType === "dinein" && (
         <input
@@ -107,9 +127,13 @@ function CartPage({ cart, totalPrice, onIncrease, onDecrease, onClose, onOrderPl
         />
       )}
 
-      {error && <div className="error-text shake">{error}</div>}
+      {cartError && <div className="error-text shake">{cartError}</div>} {/* <-- Yahan error message display hoga */}
 
-      <button className="place-order-btn" onClick={handleOrder}>
+      <button
+        className="place-order-btn"
+        onClick={handleOrder}
+        disabled={isOrderButtonDisabled} // Button disable kiya
+      >
         ORDER
       </button>
     </div>

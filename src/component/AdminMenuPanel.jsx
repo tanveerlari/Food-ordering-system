@@ -19,6 +19,13 @@ function AdminMenuPanel({ onClose }) {
     return () => unsubscribe();
   }, []);
 
+  function resolveImageSrc(val) {
+    if (!val) return "";
+    const v = val.trim();
+    if (v.startsWith("http") || v.startsWith("/")) return v;
+    return `/image/${v}`;
+  }
+
   function resetForm() {
     setForm({ name: "", price: "", category: "popular", image: "", description: "" });
     setEditingId(null);
@@ -34,7 +41,7 @@ function AdminMenuPanel({ onClose }) {
       name: form.name.trim(),
       price: parseFloat(form.price),
       category: form.category,
-      image: form.image.trim(),
+      image: resolveImageSrc(form.image.trim()),
       description: form.description.trim(),
     };
 
@@ -98,10 +105,9 @@ function AdminMenuPanel({ onClose }) {
             ))}
           </select>
 
-          {/* 👇 wapas simple text field — image path yaha type karo */}
           <input
             className="admin-input"
-            placeholder="Image path (e.g. /image/chicken-tikka.jpg)"
+            placeholder="Image filename or URL (e.g. prawn.jpg or /image/prawn.jpg)"
             value={form.image}
             onChange={(e) => setForm({ ...form, image: e.target.value })}
           />
@@ -109,7 +115,7 @@ function AdminMenuPanel({ onClose }) {
           {form.image && (
             <div className="image-preview-wrap">
               <img
-                src={form.image}
+                src={resolveImageSrc(form.image)}
                 alt="preview"
                 className="image-preview"
                 onError={(e) => (e.target.style.display = "none")}

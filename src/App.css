@@ -230,11 +230,103 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
-.header {
+.header-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex; /* Emojis aur text ko center karne ke liye */
+  align-items: center;
+  gap: 5px; /* Emoji aur text ke beech space */
+}
+
+.header-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Light hover effect */
+}
+
+/* Admin Button Specific Style */
+.header-action-btn.admin-btn {
+  color: #fff; /* White text for better visibility */
+  background-color: #3498db; /* Blue background */
+}
+
+.header-action-btn.admin-btn:hover {
+  background-color: #2980b9; /* Darker blue on hover */
+}
+
+/* Staff Button Specific Style */
+.header-action-btn.staff-btn {
+  color: #fff; /* White text */
+  background-color: #2ecc71; /* Green background */
+  margin-left: 10px; /* Admin button se thoda space */
+}
+
+.header-action-btn.staff-btn:hover {
+  background-color: #27ae60; /* Darker green on hover */
+}
+
+/* Header container ka display flex adjust karna pad sakta hai */
+.header .header-right {
   display: flex;
   align-items: center;
+  gap: 10px; /* Buttons ke beech gap */
+}
+
+/* Agar aapke paas existing .header style hai toh usko update karein */
+.header {
+  display: flex;
   justify-content: space-between;
-  padding: 20px 16px 8px;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f8f8f8; /* Example background */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header .star {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+}
+
+.header .login-btn {
+  background-color: #e0263e;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+}
+
+.header .login-btn:hover {
+  background-color: #c02131;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #555;
+  font-size: 1.2em;
+  border: 1px solid #ddd;
+}
+
+.user-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ddd;
 }
 
 .user-avatar-img {
@@ -999,6 +1091,47 @@ body {
 }
 .close-btn:active {
   transform: scale(0.8) rotate(90deg);
+}
+/* src/App.css mein add karein ya update karein */
+
+.error-text {
+  color: #e74c3c; /* Red color for error */
+  background-color: #fcebeb; /* Light red background */
+  border: 1px solid #e74c3c;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-size: 0.9em;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out; /* Fade in effect */
+}
+
+/* Optional: Shake animation for more emphasis */
+.error-text.shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ye existing styles hain, agar aapke paas hain to mat add karna */
+.empty-cart-message {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+  font-style: italic;
 }
 .feedback-overlay {
   position: fixed;

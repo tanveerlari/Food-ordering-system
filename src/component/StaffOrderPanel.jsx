@@ -27,15 +27,19 @@ function StaffOrderPanel({ onClose }) {
           orders.map((order) => (
             <div key={order.id} className="staff-order-card">
               <div className="tracking-items">
-                {order.items.map((item, i) => (
-                  <span key={i} className="tracking-item-text">
-                    {item.quantity} x {item.name}
-                  </span>
-                ))}
+                {order.items && order.items.length > 0 ? (
+                  order.items.map((item, i) => (
+                    <span key={i} className="tracking-item-text">
+                      {item.quantity} x {item.name}
+                    </span>
+                  ))
+                ) : (
+                  <span className="tracking-item-text empty-text">No items found</span>
+                )}
               </div>
 
               <p className="staff-current-status">
-                Status: <strong>{order.status}</strong>
+                Status: <strong>{order.status || "unknown"}</strong>
               </p>
 
               <div className="staff-buttons">

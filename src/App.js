@@ -1,5 +1,5 @@
-// src/App.js
 import { useState, useEffect, useMemo } from "react";
+import { auth } from "./firebase";
 import Header from "./component/Header";
 import CategoryTabs from "./component/CategoryTabs";
 import FoodCard from "./component/FoodCard";
@@ -14,17 +14,11 @@ import OrderTracking from "./component/OrderTracking";
 import FeedbackModal from "./component/FeedbackModal";
 import AdminMenuPanel from "./component/AdminMenuPanel";
 import StaffOrderPanel from "./component/StaffOrderPanel";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { OFFERS, RESTAURANT_LOCATION, ADMIN_EMAILS } from "./data";
 import { getRecommendedItems } from "./recommendationEngine";
 import { listenToMenuItems } from "./menuService";
 import { createOrderInFirestore, clearOrderInFirestore } from "./orderService";
-import "./App.css";
-
-
-// Firebase auth imports hata diye gaye hain
-// import { auth } from "./firebase";
-// import { onAuthStateChanged } from "firebase/auth";
-
 import "./App.css";
 
 function App() {
@@ -38,31 +32,41 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [user, setUser] = useState(null); // Ab yeh state page refresh par reset ho jayega
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(true);
   const [locationGateOpen, setLocationGateOpen] = useState(false);
   const [isInsideRestaurant, setIsInsideRestaurant] = useState(null);
   const [activeOrder, setActiveOrder] = useState(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [lastOrderItems, setLastOrderItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isAdmin = user && ADMIN_EMAILS.includes(user.email);
 
-  // Firebase auth state listener hata diya gaya hai
-  // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-  //     if (currentUser) {
-  //       setUser({
-  //         email: currentUser.email,
-  //         name: currentUser.displayName,
-  //         photoURL: currentUser.photoURL,
-  //         uid: currentUser.uid,
-  //       });
-  //     } else {
-  //       setUser(null);
-  //     }
-  //   });
-  //   return () => unsubscribe();
-  // }, []);
+  // 👇 search ke hisaab se ya category ke hisaab se items filter honge
+  const filteredItems = searchQuery.trim()
+    ? items.filter((i) =>
+        i.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : items.filter((i) => i.category === activeCategory);
+
+  /*
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          email: firebaseUser.email,
+          name: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+        });
+      } else {
+        setUser(null);
+      }
+      setAuthChecked(true);
+    });
+    return () => unsubscribe();
+  }, []);
+  */
 
   useEffect(() => {
     const unsubscribe = listenToMenuItems(setItems);
@@ -72,8 +76,6 @@ function App() {
   const totalQuantity = cart.reduce((sum, c) => sum + c.quantity, 0);
   const totalPrice = cart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
 
-
-  const filteredItems = items.filter((i) => i.category === activeCategory);
   const likedIds = Object.keys(liked).filter((id) => liked[id]).map(Number);
   const recommendedItems = useMemo(
     () => getRecommendedItems(items, likedIds, orderedItemIds, 4),
@@ -105,7 +107,8 @@ function App() {
 
   function decreaseQty(itemId) {
     setCart((prev) =>
-      prev.map((c) => (c.item.id === itemId ? { ...c, quantity: c.quantity - 1 } : c))
+      prev
+        .map((c) => (c.item.id === itemId ? { ...c, quantity: c.quantity - 1 } : c))
         .filter((c) => c.quantity > 0)
     );
   }
@@ -125,7 +128,6 @@ function App() {
     await createOrderInFirestore(orderId, newOrder);
     setActiveOrder({ id: orderId, ...newOrder });
   }
-
 
   function handleOrderBarClick() {
     if (!user) {
@@ -153,8 +155,17 @@ function App() {
     }
   }
 
+  async function handleLogout() {
+    await signOut(auth);
+    setUser(null);
+    window.location.reload();
+  }
+
   // 👇 /admin route
   if (path === "/admin") {
+    if (!authChecked) {
+      return <div className="standalone-page"><p className="empty-text">Loading...</p></div>;
+    }
     return (
       <div className="standalone-page">
         {!user ? (
@@ -173,6 +184,9 @@ function App() {
 
   // 👇 /staff route
   if (path === "/staff") {
+    if (!authChecked) {
+      return <div className="standalone-page"><p className="empty-text">Loading...</p></div>;
+    }
     return (
       <div className="standalone-page">
         {!user ? (
@@ -198,9 +212,21 @@ function App() {
         isAdmin={isAdmin}
         onAdminClick={() => window.open("/admin", "_blank")}
         onStaffClick={() => window.open("/staff", "_blank")}
+        onLogout={handleLogout}
       />
 
       <OfferSlider offers={OFFERS} />
+
+      <div className="search-bar-wrapper">
+        <input
+          type="text"
+          className="search-bar-input"
+          placeholder="🔍 Search for items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       <CategoryTabs active={activeCategory} onSelect={setActiveCategory} />
       <RecommendedSection items={recommendedItems} onOpen={setSelectedItem} />
 
@@ -278,12 +304,19 @@ function App() {
           onLoginSuccess={(userData) => {
             setUser(userData);
             setLoginOpen(false);
+
+            // 👇 agar admin hai, to seedha /admin bhej do
+            if (ADMIN_EMAILS.includes(userData.email)) {
+              window.location.href = "/admin";
+              return;
+            }
+
             if (totalQuantity > 0) {
-                if (isInsideRestaurant === true) {
-                    setCartOpen(true);
-                } else {
-                    setLocationGateOpen(true);
-                }
+              if (isInsideRestaurant === true) {
+                setCartOpen(true);
+              } else {
+                setLocationGateOpen(true);
+              }
             }
           }}
         />
@@ -292,4 +325,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

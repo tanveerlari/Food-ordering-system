@@ -1,8 +1,8 @@
 
 
 export const RESTAURANT_LOCATION = {
-  latitude:  19.415033220626025,      
-  longitude: 72.80153193576244, 
+  latitude:  19.279346129793442, 
+  longitude: 72.87529530994871 , 
   allowedRadiusMeters: 500,
 };
 
@@ -42,9 +42,10 @@ export const OFFERS = [
 ];
 export const CATEGORIES = [
   { id: "popular", label: "Popular", emoji: "👌" },
-  { id: "curry", label: "curry", emoji: "🍛" },
-  { id: "ramen", label: "ramen", emoji: "🍜" },
-  { id: "teppanyaki", label: "teppanyaki", emoji: "🍜" },
+  { id: "veg", label: "Veg", emoji: "🥦" },
+  { id: "non-veg", label: "Non-Veg", emoji: "🍗" },
+  { id: "colddrink", label: "Cold Drink", emoji: "🥤" },
+  { id: "desert", label: "Desert", emoji: "🍰" },
 ];
 
 export const ITEMS = [

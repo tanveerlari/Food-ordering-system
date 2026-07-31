@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { listenToMenuItems, addMenuItem, updateMenuItem, deleteMenuItem } from "../menuService";
 
-const CATEGORIES = ["popular", "curry", "ramen", "teppanyaki"];
+const CATEGORIES = ["popular", "Veg", "Non-Veg", "Cold Drink", "Desert"];
 
 function AdminMenuPanel({ onClose }) {
   const [items, setItems] = useState([]);
